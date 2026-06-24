@@ -10,7 +10,6 @@ def f(x):
     return math.sqrt(4*x + 7) - 3*math.cos(x)
 
 def bisection(a, b, eps=0.01):
-    """Метод бисекции"""
     if f(a) is None or f(b) is None:
         return None
     if f(a) * f(b) > 0:
@@ -28,7 +27,6 @@ def bisection(a, b, eps=0.01):
 
 
 def secant(x0, x1, eps=0.01):
-    """Метод секущих"""
     n = 0
     while n < 1000:
         f0, f1 = f(x0), f(x1)
@@ -43,7 +41,6 @@ def secant(x0, x1, eps=0.01):
 
 
 def input_float(text):
-    """Ввод числа с проверкой"""
     while True:
         try:
             return float(input(text))
@@ -57,7 +54,6 @@ def main():
     print("  Методы: бисекции и секущих")
     print("=" * 50)
 
-    # --- Ввод с проверкой ---
     a = input_float("\nЛевая граница (≥ -1.75): ")
     while a < -1.75:
         print("  x должен быть ≥ -1.75")
@@ -73,7 +69,6 @@ def main():
         print("  Точность должна быть > 0")
         eps = input_float("Точность: ")
 
-    # --- Поиск корней ---
     print(f"\nПоиск корней на [{a}, {b}], ε = {eps}")
     print("-" * 50)
 
