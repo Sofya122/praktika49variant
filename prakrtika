@@ -1,0 +1,110 @@
+import math
+
+# Вариант 49: √(4x+7) = 3cos(x)
+# Методы: бисекции и секущих, ε = 0.01
+
+def f(x):
+    """f(x) = √(4x+7) - 3cos(x)"""
+    if 4*x + 7 < 0:
+        return None
+    return math.sqrt(4*x + 7) - 3*math.cos(x)
+
+def bisection(a, b, eps=0.01):
+    """Метод бисекции"""
+    if f(a) is None or f(b) is None:
+        return None
+    if f(a) * f(b) > 0:
+        return None
+
+    n = 0
+    while (b - a) / 2 > eps:
+        c = (a + b) / 2
+        if f(a) * f(c) <= 0:
+            b = c
+        else:
+            a = c
+        n += 1
+    return (a + b) / 2, n
+
+
+def secant(x0, x1, eps=0.01):
+    """Метод секущих"""
+    n = 0
+    while n < 1000:
+        f0, f1 = f(x0), f(x1)
+        if f0 is None or f1 is None or abs(f1 - f0) < 1e-12:
+            return None
+        x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
+        if abs(x2 - x1) < eps:
+            return x2, n + 1
+        x0, x1 = x1, x2
+        n += 1
+    return None
+
+
+def input_float(text):
+    """Ввод числа с проверкой"""
+    while True:
+        try:
+            return float(input(text))
+        except ValueError:
+            print("  Ошибка! Введите число.")
+
+
+def main():
+    print("=" * 50)
+    print("  Вариант 49: √(4x+7) = 3cos(x)")
+    print("  Методы: бисекции и секущих")
+    print("=" * 50)
+
+    # --- Ввод с проверкой ---
+    a = input_float("\nЛевая граница (≥ -1.75): ")
+    while a < -1.75:
+        print("  x должен быть ≥ -1.75")
+        a = input_float("Левая граница: ")
+
+    b = input_float("Правая граница: ")
+    while b <= a:
+        print("  Правая граница должна быть > левой")
+        b = input_float("Правая граница: ")
+
+    eps = input_float("Точность (например 0.01): ")
+    while eps <= 0:
+        print("  Точность должна быть > 0")
+        eps = input_float("Точность: ")
+
+    # --- Поиск корней ---
+    print(f"\nПоиск корней на [{a}, {b}], ε = {eps}")
+    print("-" * 50)
+
+    step = 0.5
+    x = a
+    roots = []
+
+    while x < b:
+        x1 = min(x + step, b)
+        fa, fb = f(x), f(x1)
+
+        if fa is not None and fb is not None and fa * fb <= 0:
+            rb = bisection(x, x1, eps)
+            rs = secant(x, x1, eps)
+
+            if rb:
+                print(f"\nИнтервал [{x:.2f}, {x1:.2f}]:")
+                print(f"  Бисекция: x = {rb[0]:.6f} ({rb[1]} итер.)")
+                if rs:
+                    print(f"  Секущие:  x = {rs[0]:.6f} ({rs[1]} итер.)")
+                print(f"  f(x) = {f(rb[0]):.2e}")
+                roots.append(rb[0])
+
+        x += step
+
+    print("\n" + "=" * 50)
+    print(f"Найдено корней: {len(roots)}")
+    for i, r in enumerate(roots, 1):
+        print(f"  x{i} = {r:.6f}")
+    print("=" * 50)
+
+
+if __name__ == "__main__":
+    main()
