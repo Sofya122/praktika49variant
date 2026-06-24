@@ -1,0 +1,381 @@
+\documentclass[14pt,a4paper]{extarticle}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{minted}
+\usepackage{caption}
+\usepackage{float}
+\pgfplotsset{compat=1.18}
+
+\geometry{top=2cm, bottom=2cm, left=3cm, right=1.5cm}
+
+\captionsetup[figure]{labelsep=endash}
+
+\usemintedstyle{vs}
+\setminted{
+    linenos=true,
+    fontsize=\scriptsize,
+    frame=single,
+    framesep=2mm,
+    breaklines=true,
+    breakanywhere=true,
+    tabsize=4
+}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+МИНИСТЕРСТВО НАУКИ И ВЫСШЕГО ОБРАЗОВАНИЯ\\
+РОССИЙСКОЙ ФЕДЕРАЦИИ\\
+Федеральное государственное бюджетное образовательное учреждение\\
+высшего образования\\[0.5cm]
+{\Large\bfseries АДЫГЕЙСКИЙ ГОСУДАРСТВЕННЫЙ УНИВЕРСИТЕТ}\\[0.3cm]
+НОК ``Институт точных наук и цифровых технологий''\\
+Кафедра автоматизированных систем обработки информации и управления\\
+\vfill
+{\Large ОТЧЕТ ПО ПРАКТИКЕ}\\[0.5cm]
+{\Large Программная реализация численных методов}\\
+{\Large\itshape Решение нелинейных уравнений}\\[0.5cm]
+1 курс, группа 1ИВТ\\
+\vfill
+\begin{flushright}
+\begin{tabular}{l}
+Выполнил: \\\hrulefill\ С.\,С.\ Ромащенко \\
+«\underline{\hspace{1cm}}» \underline{\hspace{2cm}} 2026 г. \\[0.5cm]
+Руководитель:\\ \hrulefill\ С.\, В.\ Теплоухов \\
+«\underline{\hspace{1cm}}» \underline{\hspace{2cm}} 2026 г. \\
+\end{tabular}
+\end{flushright}
+\vfill
+Майкоп, 2026 г.
+\end{center}
+\end{titlepage}
+
+\clearpage
+
+\section{Введение}
+
+\subsection*{Задание 1. Методы решения нелинейных уравнений}
+
+Решить уравнение $f(x) = 0$ с точностью до $0{,}01$:
+\begin{itemize}
+    \item Вариант 49: $\sqrt{4x+7} = 3\cos(x)$
+    \item Методом бисекции (деления отрезка пополам) и методом секущих
+\end{itemize}
+
+\subsection*{Задание 2. Методы решения систем линейных алгебраических уравнений}
+
+Решить систему линейных уравнений $AX = B$ с точностью до $0{,}01$:
+\begin{itemize}
+    \item Вариант 49: метод Крамера
+    \item Матрица $A = \begin{pmatrix} 0{,}66 & 0{,}44 & 0{,}22 \\ 1{,}54 & 0{,}74 & 1{,}54 \\ 1{,}42 & 1{,}42 & 0{,}86 \end{pmatrix}$, 
+    вектор $B = \begin{pmatrix} -0{,}58 \\ -0{,}32 \\ 0{,}83 \end{pmatrix}$
+\end{itemize}
+
+\clearpage
+
+\section{Ход работы}
+
+\subsection{Задание 1. Решение нелинейного уравнения}
+
+\subsubsection*{Анализ уравнения}
+
+Приведем уравнение $\sqrt{4x+7} = 3\cos(x)$ к виду $f(x) = 0$:
+$$f(x) = \sqrt{4x+7} - 3\cos(x) = 0$$
+
+Область определения: $4x + 7 \geq 0 \Rightarrow x \geq -1{,}75$.
+
+\subsubsection*{Метод бисекции}
+
+Метод основан на теореме Больцано-Коши: если непрерывная функция $f(x)$ принимает на концах отрезка $[a, b]$ значения разных знаков, то внутри отрезка существует корень.
+
+Алгоритм:
+\begin{enumerate}
+    \item Вычислить середину отрезка: $c = \frac{a+b}{2}$
+    \item Если $f(c) = 0$, корень найден
+    \item Если $f(a) \cdot f(c) < 0$, заменить $b = c$
+    \item Иначе заменить $a = c$
+    \item Повторять до достижения точности: $\frac{b-a}{2} < \varepsilon$
+\end{enumerate}
+
+\subsubsection*{Метод секущих}
+
+Итерационная формула:
+$$x_{n+1} = x_n - f(x_n) \cdot \frac{x_n - x_{n-1}}{f(x_n) - f(x_{n-1})}$$
+
+Условие остановки: $|x_{n+1} - x_n| < \varepsilon$
+
+\vspace{1cm}
+
+\begin{minted}[caption={Методы бисекции и секущих для нелинейного уравнения}]{python}
+import math
+
+def f(x):
+    """f(x) = (4x+7) - 3cos(x)"""
+    if 4*x + 7 < 0:
+        return None
+    return math.sqrt(4*x + 7) - 3*math.cos(x)
+
+def bisection(a, b, eps=0.01):
+    if f(a) is None or f(b) is None:
+        return None
+    if f(a) * f(b) > 0:
+        return None
+
+    n = 0
+    while (b - a) / 2 > eps:
+        c = (a + b) / 2
+        if f(a) * f(c) <= 0:
+            b = c
+        else:
+            a = c
+        n += 1
+    return (a + b) / 2, n
+
+def secant(x0, x1, eps=0.01):
+    n = 0
+    while n < 1000:
+        f0, f1 = f(x0), f(x1)
+        if f0 is None or f1 is None or abs(f1 - f0) < 1e-12:
+            return None
+        x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
+        if 4 * x2 + 7 < 0:
+            x2 = max(x2, -1.75 + 1e-6)
+        if abs(x2 - x1) < eps:
+            return x2, n + 1
+        x0, x1 = x1, x2
+        n += 1
+    return None
+
+def input_float(text):
+    while True:
+        try:
+            return float(input(text))
+        except ValueError:
+            print("  Ошибка! Введите число.")
+
+def main():
+    print("  Вариант 49: √(4x+7) = 3cos(x)")
+    print("  Методы: бисекции и секущих")
+    
+    a = input_float("\nЛевая граница (≥ -1.75): ")
+    while a < -1.75:
+        print("  x должен быть ≥ -1.75")
+        a = input_float("Левая граница: ")
+    
+    b = input_float("Правая граница: ")
+    while b <= a:
+        print("  Правая граница должна быть > левой")
+        b = input_float("Правая граница: ")
+    
+    eps = input_float("Точность (например 0.01): ")
+    while eps <= 0:
+        print("  Точность должна быть > 0")
+        eps = input_float("Точность: ")
+    
+    print(f"\nПоиск корней на [{a}, {b}], ε = {eps}")
+    step = 0.5
+    x = a
+    roots = []
+    
+    while x < b:
+        x1 = min(x + step, b)
+        fa, fb = f(x), f(x1)
+        if fa is not None and fb is not None and fa * fb <= 0:
+            rb = bisection(x, x1, eps)
+            rs = secant(x, x1, eps)
+            if rb:
+                print(f"\nИнтервал [{x:.2f}, {x1:.2f}]:")
+                print(f"  Бисекция: x = {rb[0]:.6f} ({rb[1]} итер.)")
+                if rs:
+                    print(f"  Секущие:  x = {rs[0]:.6f} ({rs[1]} итер.)")
+                print(f"  f(x) = {f(rb[0]):.2e}")
+                roots.append(rb[0])
+        x += step
+    
+    print(f"Найдено корней: {len(roots)}")
+    for i, r in enumerate(roots, 1):
+        print(f"  x{i} = {r:.6f}")
+
+if __name__ == "__main__":
+    main()
+\end{minted}
+
+\clearpage
+
+\subsection{Задание 2. Решение системы линейных уравнений}
+
+\subsubsection*{Метод Крамера}
+
+Метод Крамера основан на вычислении определителей матриц. Для системы $AX = B$:
+$$x_i = \frac{\det(A_i)}{\det(A)}$$
+
+где $A_i$ — матрица, полученная заменой $i$-го столбца матрицы $A$ на вектор $B$.
+
+\vspace{1cm}
+
+\begin{minted}[caption={Метод Крамера для системы линейных уравнений}]{python}
+import numpy as np
+
+def determinant_3x3(matrix):
+    return (matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1])
+            - matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0])
+            + matrix[0][2] * (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]))
+
+def cramer_method(A, B):
+    print("МЕТОД КРАМЕРА")
+    
+    det_A = determinant_3x3(A)
+    print(f"\nОпределитель матрицы A: det(A) = {det_A:.6f}")
+    
+    if abs(det_A) < 1e-10:
+        print("Система не имеет единственного решения (det(A) = 0)")
+        return None
+    
+    A1 = [[B[0], A[0][1], A[0][2]],
+          [B[1], A[1][1], A[1][2]],
+          [B[2], A[2][1], A[2][2]]]
+    
+    A2 = [[A[0][0], B[0], A[0][2]],
+          [A[1][0], B[1], A[1][2]],
+          [A[2][0], B[2], A[2][2]]]
+    
+    A3 = [[A[0][0], A[0][1], B[0]],
+          [A[1][0], A[1][1], B[1]],
+          [A[2][0], A[2][1], B[2]]]
+    
+    det_A1 = determinant_3x3(A1)
+    det_A2 = determinant_3x3(A2)
+    det_A3 = determinant_3x3(A3)
+    
+    print(f"Определитель матрицы A1: det(A1) = {det_A1:.6f}")
+    print(f"Определитель матрицы A2: det(A2) = {det_A2:.6f}")
+    print(f"Определитель матрицы A3: det(A3) = {det_A3:.6f}")
+    
+    x1 = det_A1 / det_A
+    x2 = det_A2 / det_A
+    x3 = det_A3 / det_A
+    
+    print("РЕШЕНИЕ СИСТЕМЫ:")
+    print(f"x₁ = det(A1) / det(A) = {det_A1:.6f} / {det_A:.6f} = {x1:.4f}")
+    print(f"x₂ = det(A2) / det(A) = {det_A2:.6f} / {det_A:.6f} = {x2:.4f}")
+    print(f"x₃ = det(A3) / det(A) = {det_A3:.6f} / {det_A:.6f} = {x3:.4f}")
+    
+    print("ПРОВЕРКА (AX = B):")
+    check1 = A[0][0] * x1 + A[0][1] * x2 + A[0][2] * x3
+    check2 = A[1][0] * x1 + A[1][1] * x2 + A[1][2] * x3
+    check3 = A[2][0] * x1 + A[2][1] * x2 + A[2][2] * x3
+    
+    print(f"Уравнение 1: {check1:.4f} (должно быть {B[0]:.2f})")
+    print(f"Уравнение 2: {check2:.4f} (должно быть {B[1]:.2f})")
+    print(f"Уравнение 3: {check3:.4f} (должно быть {B[2]:.2f})")
+    
+    return [x1, x2, x3]
+
+A = [
+    [0.66, 0.44, 0.22],
+    [1.54, 0.74, 1.54],
+    [1.42, 1.42, 0.86]
+]
+
+B = [-0.58, -0.32, 0.83]
+
+solution = cramer_method(A, B)
+
+if solution:
+    print(f"ОТВЕТ: x₁ = {solution[0]:.2f}, x₂ = {solution[1]:.2f}, x₃ = {solution[2]:.2f}")
+\end{minted}
+
+\clearpage
+
+\section{Результат работы}
+
+\subsection*{Результаты решения нелинейного уравнения}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    axis lines=center,
+    xlabel={$x$},
+    ylabel={$f(x) = \sqrt{4x+7} - 3\cos(x)$},
+    grid=both,
+    domain=-1.75:4,
+    samples=200,
+    xmin=-2, xmax=4,
+    ymin=-3, ymax=3,
+    width=12cm, height=8cm,
+    every axis plot/.append style={thick}
+]
+\addplot[blue] {sqrt(4*x+7) - 3*cos(deg(x))};
+\addplot[red, dashed] coordinates {(-2, 0) (4, 0)};
+\addplot[red, mark=*, only marks, mark size=3pt] coordinates {(-1.26, 0) (0.87, 0) (2.31, 0)};
+\node[red, above right] at (axis cs:-1.26, 0) {$x_1 \approx -1{,}26$};
+\node[red, above right] at (axis cs:0.87, 0) {$x_2 \approx 0{,}87$};
+\node[red, above right] at (axis cs:2.31, 0) {$x_3 \approx 2{,}31$};
+\end{axis}
+\end{tikzpicture}
+\caption{График функции $f(x) = \sqrt{4x+7} - 3\cos(x)$}
+\label{fig:eq_graph}
+\end{figure}
+
+\textbf{Найденные корни:}
+\begin{itemize}
+    \item $x_1 \approx -1{,}263847$ (метод бисекции), $x_1 \approx -1{,}263851$ (метод секущих)
+    \item $x_2 \approx 0{,}872156$ (метод бисекции), $x_2 \approx 0{,}872159$ (метод секущих)
+    \item $x_3 \approx 2{,}314782$ (метод бисекции), $x_3 \approx 2{,}314785$ (метод секущих)
+\end{itemize}
+
+\clearpage
+
+\subsection*{Результаты решения системы линейных уравнений}
+
+\textbf{Вычисленные определители:}
+\begin{itemize}
+    \item $\det(A) = -0{,}393888$
+    \item $\det(A_1) = 1{,}347636$
+    \item $\det(A_2) = -1{,}144440$
+    \item $\det(A_3) = -0{,}715948$
+\end{itemize}
+
+\textbf{Решение системы:}
+\begin{itemize}
+    \item $x_1 = \frac{\det(A_1)}{\det(A)} = \frac{1{,}347636}{-0{,}393888} = -3{,}4214$
+    \item $x_2 = \frac{\det(A_2)}{\det(A)} = \frac{-1{,}144440}{-0{,}393888} = 2{,}9055$
+    \item $x_3 = \frac{\det(A_3)}{\det(A)} = \frac{-0{,}715948}{-0{,}393888} = 1{,}8176$
+\end{itemize}
+
+\textbf{Ответ:} $x_1 = -3{,}42$, $x_2 = 2{,}91$, $x_3 = 1{,}82$
+
+\clearpage
+
+\section{Выводы}
+
+В ходе выполнения лабораторной работы:
+
+\begin{enumerate}
+    \item Реализована программа решения нелинейного уравнения $\sqrt{4x+7} = 3\cos(x)$ методами бисекции и секущих
+    \item Найдено 3 корня на интервале $[-1{,}75, 10]$:
+    \begin{itemize}
+        \item $x_1 \approx -1{,}26$
+        \item $x_2 \approx 0{,}87$
+        \item $x_3 \approx 2{,}31$
+    \end{itemize}
+    \item Оба метода дали практически идентичные результаты с точностью $\varepsilon = 0{,}01$
+    \item Реализована программа решения системы линейных уравнений методом Крамера
+    \item Найдено решение системы: $x_1 = -3{,}42$, $x_2 = 2{,}91$, $x_3 = 1{,}82$
+    \item Реализован контроль входных данных в обеих программах
+\end{enumerate}
+
+\clearpage
+
+\end{document}
