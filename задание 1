@@ -1,8 +1,4 @@
 import math
-
-# Вариант 49: √(4x+7) = 3cos(x)
-# Методы: бисекции и секущих, ε = 0.01
-
 def f(x):
     """f(x) = √(4x+7) - 3cos(x)"""
     if 4*x + 7 < 0:
@@ -30,15 +26,20 @@ def secant(x0, x1, eps=0.01):
     n = 0
     while n < 1000:
         f0, f1 = f(x0), f(x1)
+
         if f0 is None or f1 is None or abs(f1 - f0) < 1e-12:
             return None
         x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
+
+        if 4 * x2 + 7 < 0:
+            x2 = max(x2, -1.75 + 1e-6)
+
         if abs(x2 - x1) < eps:
             return x2, n + 1
+
         x0, x1 = x1, x2
         n += 1
     return None
-
 
 def input_float(text):
     while True:
@@ -49,10 +50,9 @@ def input_float(text):
 
 
 def main():
-    print("=" * 50)
     print("  Вариант 49: √(4x+7) = 3cos(x)")
     print("  Методы: бисекции и секущих")
-    print("=" * 50)
+
 
     a = input_float("\nЛевая граница (≥ -1.75): ")
     while a < -1.75:
@@ -70,8 +70,6 @@ def main():
         eps = input_float("Точность: ")
 
     print(f"\nПоиск корней на [{a}, {b}], ε = {eps}")
-    print("-" * 50)
-
     step = 0.5
     x = a
     roots = []
@@ -94,11 +92,9 @@ def main():
 
         x += step
 
-    print("\n" + "=" * 50)
     print(f"Найдено корней: {len(roots)}")
     for i, r in enumerate(roots, 1):
         print(f"  x{i} = {r:.6f}")
-    print("=" * 50)
 
 
 if __name__ == "__main__":
